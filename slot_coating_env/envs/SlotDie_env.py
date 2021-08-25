@@ -4,7 +4,7 @@ from gym.utils import seeding
 
 Class SlotDie(gym.Env):
 
-    """
+"""
     slot_die coating process
     The goal of this algorithm is to max the rewards among 100 independent coating experiments by using a certain type of liquid
     determinied values for a certain type of liquid:
@@ -46,22 +46,22 @@ Class SlotDie(gym.Env):
     increase the rate in which choose that direction until the reward reaches
     its maximum 
 
-    """
+"""
 	def __init__(self):
 	# self.action_space, self_observation_space
-	
     	self.experiments_count = 0
     	self.experiments_max = 100
     	self.observation = 0
-
     	self.x_f = 500
     	self.Lu = 500
+    
     # liquid property
     	self.viscosity = 23
     	self.density = 1210
     	self.n = 1
     	self.m = 0.045
     	self.surface = 0.066
+    
     # variables
     # states value are liquid positions
 		self.observation_space = spaces.Box(low = np.array([60,120]),high = np.array([120,160]), dtype=np.uint8)
