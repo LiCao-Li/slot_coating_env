@@ -4,7 +4,7 @@ from gym.utils import seeding
 
 Class SlotDie(gym.Env):
 
-"""
+    """Explaination
     slot_die coating process
     The goal of this algorithm is to max the rewards among 100 independent coating experiments by using a certain type of liquid
     determinied values for a certain type of liquid:
@@ -45,36 +45,34 @@ Class SlotDie(gym.Env):
     Ideally an agent will be able to recognise actions that lead to a higher reward and
     increase the rate in which choose that direction until the reward reaches
     its maximum 
+    """
 
-"""
 	def __init__(self):
-	# self.action_space, self_observation_space
-    	self.experiments_count = 0
-    	self.experiments_max = 100
-    	self.observation = 0
-    	self.x_f = 500
-    	self.Lu = 500
+# self.action_space, self_observation_space
+        self.experiments_count = 0
+        self.experiments_max = 100
+        self.observation = 0
+        self.x_f = 500
+        self.Lu = 500
     
-    # liquid property
-    	self.viscosity = 23
-    	self.density = 1210
-    	self.n = 1
-    	self.m = 0.045
-    	self.surface = 0.066
-    
-    # variables
-    # states value are liquid positions
-		self.observation_space = spaces.Box(low = np.array([60,120]),high = np.array([120,160]), dtype=np.uint8)
-	# action values are web_speed, coating_gap and ratios
-		self.action_space = spaces.Box(low = np.array([0.05,200,1.5]),high = np.array([0.1,500,5]))
-
-	def judge(self,action):
+# liquid property
+        self.viscosity = 23
+        self.density = 1210
+        self.n = 1
+        self.m = 0.045
+        self.surface = 0.066
+# variables
+# states value are liquid positions
+        self.observation_space = spaces.Box(low = np.array([60,120]),high = np.array([120,160]), dtype=np.uint8)
+# action values are web_speed, coating_gap and ratios
+        self.action_space = spaces.Box(low = np.array([0.05,200,1.5]),high = np.array([0.1,500,5]))
+	
+    def judge(self,action):
 
 		return x_u
 
 	def reset(self): 
-	# return a value self.observation_space	
-
+# return a value self.observation_space	
     	self.experiments_count = 0
     	self.observation = 0
     	return self.observation
@@ -87,7 +85,7 @@ Class SlotDie(gym.Env):
         elif (self.judge(action) >= self.x_f):
             self.observation = 2  # break-up
 
-        elif (self.judge(action) < self.x_f and self.judge(action) > 0):
+        else (self.judge(action) < self.x_f and self.judge(action) > 0):
             self.observation = 1  # defects free
 
         reward = self.judge(action)
