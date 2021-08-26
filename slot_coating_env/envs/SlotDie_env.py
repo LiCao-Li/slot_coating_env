@@ -64,15 +64,7 @@ class SlotDie(gym.Env):
         self.observation_space = spaces.Box(low = np.array([60,120]),high = np.array([120,160]), dtype=np.uint8)
         # action values are web_speed, coating_gap and ratios
         self.action_space = spaces.Box(low = np.array([0.05,200,1.5]),high = np.array([0.1,500,5]))
-###
-thickness = g/r  
-            fr = thickness*(U*h_w)
-            
-            a = (U*(n+1)*(2*n+1)/n)**n*(g**(-n-1))
-            b_s = (U*(g-2*thickness)*(n+1)*(2*n+1)/n)**n * (g**(-2*n-1))
-            b_l = -(U*(2*thickness-g)*(n+1)*(2*n+1)/n)**n * (g**(-2*n-1))
-            modified_CA = ((U*m*(U/g)**(n-1))/sigma)**(2/3)
-###
+
     
     def judge(self,state,action_sample):
         # nd.array action [U,g,r]
