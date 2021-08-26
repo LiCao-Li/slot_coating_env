@@ -1,5 +1,5 @@
 import gym 
-from gym import error, space, utils
+from gym import error, spaces, utils
 from gym.utils import seeding
 
 class SlotDie(gym.Env):
@@ -49,24 +49,52 @@ class SlotDie(gym.Env):
         self.experiments_count = 0
         self.experiments_max = 1000
         self.observation = 0
-        self.x_f = 500
-        self.Lu = 500
+        self.x_f = 500*1e-6
+        self.Lu = 500*1e-6
         # liquid property
-        self.viscosity = 23
+        self.mu = 23
         self.density = 1210
         self.n = 1
         self.m = 0.045
+        self.h_w = 0.1
         self.surface = 0.066
+        self.xd = 2*self.Lu + self.h_w
         # variables
         # states value are liquid positions
         self.observation_space = spaces.Box(low = np.array([60,120]),high = np.array([120,160]), dtype=np.uint8)
         # action values are web_speed, coating_gap and ratios
         self.action_space = spaces.Box(low = np.array([0.05,200,1.5]),high = np.array([0.1,500,5]))
-
+###
+thickness = g/r  
+            fr = thickness*(U*h_w)
+            
+            a = (U*(n+1)*(2*n+1)/n)**n*(g**(-n-1))
+            b_s = (U*(g-2*thickness)*(n+1)*(2*n+1)/n)**n * (g**(-2*n-1))
+            b_l = -(U*(2*thickness-g)*(n+1)*(2*n+1)/n)**n * (g**(-2*n-1))
+            modified_CA = ((U*m*(U/g)**(n-1))/sigma)**(2/3)
+###
     
-    def judge(self,action):
+    def judge(self,state,action_sample):
+        # nd.array action [U,g,r]
+        self.thickness = action_sample[1]/action_sample[2]
+        self.a = (action_sample[0]*(self.n+1)*(2*self.n+1)/self.n)**n*(action_sample[1]**(-n-1))
+        self.b_s = (action_sample[0]*(action_sample[1]-2*self.thickness)*(n+1)*(2*n+1)/n)**n * (action_sample[1]**(-2*n-1))
+        self.b_l = -(action_sample[0]*(2*self.thickness-action_sample[1])*(n+1)*(2*n+1)/n)**n * (action_sample[1]**(-2*n-1))
+        self.modified_CA = ((action_sample[0]*self.m*(action_sample[0]/action_sample[1])**(n-1))/self.surface)**(2/3)
+        self.fr = self.thickness*(action_sample[0]*self.h_w)
         
-        return x_u
+        self.p_ambient = self.density*action_sample[0]**2/2
+        if self.thickness < action_sample[1]/2:
+            self.xu_estimate = self.x_f - action_sample[1]**2*(self.p_ambient - 1.34*self.modified_CA*self.surface/self.thickness - (self.xd-self.x_f)*self.m*self.b_s - self.surface*(math.cos(state[1])+math.cos(state[0]))/action_sample[2])/(6*self.mu*action_sample[0])
+#                 leaking_xu = X_f_up-Lu
+#                 breaking_xu = X_f_up
+                
+        elif self.thickness > action_sample[1]/2:
+            self.xu_estimate = self.x_f - action_sample[1]**2*(self.p_ambient - 1.34*self.modified_CA*self.surface/self.thickness - (self.xd-self.x_f)*self.m*self.b_l - self.surface*(math.cos(state[1])+math.cos(state[0]))/action_sample[2])/(6*self.mu*action_sample[0])
+#                 leaking_xu = X_f_up-Lu
+#                 breaking_xu = X_f_up
+        return self.xu_estimate
+    
 
     def reset(self): 
         # return a value self.observation_space
@@ -85,7 +113,7 @@ class SlotDie(gym.Env):
         else (self.judge(action) < self.x_f and self.judge(action) > 0):
             self.observation = 1  # defects free
 
-        reward = self.judge(action)
+        reward = self.x_f - self.judge(action)
 
         self.experiments_count += 1
         done = self.experiments_count >= self.experiments_max
