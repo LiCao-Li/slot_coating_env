@@ -2,7 +2,7 @@ import gym
 from gym import error, space, utils
 from gym.utils import seeding
 
-Class SlotDie(gym.Env):
+class SlotDie(gym.Env):
     
     """ Explaination
     slot_die coating process
@@ -47,7 +47,7 @@ Class SlotDie(gym.Env):
     def __init__(self):
         # self.action_space, self_observation_space
         self.experiments_count = 0
-        self.experiments_max = 100
+        self.experiments_max = 1000
         self.observation = 0
         self.x_f = 500
         self.Lu = 500
