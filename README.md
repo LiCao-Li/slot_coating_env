@@ -10,3 +10,7 @@ Action values are continous (np.array), including coating machine setting parame
 - ratio between coating gap and target thickness 
 
 Rewards are customized based on physical formulas for Newtonian and Non-Newtonian liquids.
+
+next step:
+1. Q-learning for simple test and debudding 
+2. DDPG algorithm testing
