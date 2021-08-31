@@ -2,6 +2,7 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 import numpy as np
+import math
 
 class SlotDie(gym.Env):
     
@@ -62,18 +63,42 @@ class SlotDie(gym.Env):
         self.xd = 2*self.Lu + self.h_w
         # variables
         # states value are liquid positions
+        
+        # self.observation_space = spaces.Discrete(4)  <-- 
+        # 小机器是state free. 
+        # 动态的action变化，
+        # 稳态走动的话，stateless，
+        # assumption： 因为外部的扰动，所以不是一个稳态问题。
+        # action 阐述外界干扰
+        ### 前面的不稳定是一个determined的东西，干扰是uncertain的，不知哪里来，也不知是啥
+        # 问题： 稳态会被破坏吗，破坏因素可以建模吗
+        # 在一个短时间内，会有defect free。1.找到稳定态，且2. 保持稳定态
+        ## CFD openfoam.
+        ####### 
+        ## 1. theta and phi, 现实是不是只能用CFD 
+        ## 我们是不是state free？ 我们不是state free， 如果找到一个稳定状态，工作就结束了，然后让机器一直弄就可以了？
+        ## 如果假设是 不是state free, 过程中因为不知道的因素来干扰，所以我们需要一直变动actions，例如carpole的摇摆，来得到一个动态稳定
+        #######
+        # phi， theta, depends speed, or ink property. 
         self.observation_space = spaces.Box(low = np.array([60,120]),high = np.array([120,160]), dtype=np.uint8)
         # action values are web_speed, coating_gap and ratios
+        # self.action_space = spaces.Box(low = np.array([0.05,200,1.5,60,120]),high = np.array([0.1,500,5,120,160]))
         self.action_space = spaces.Box(low = np.array([0.05,200,1.5]),high = np.array([0.1,500,5]))
+        
+        ## need to modify this 
         self.state = self.observation_space.sample()
+        
+        # init total reward
+        self.total_reward = 0
+       
     
-    def judge(self,action_sample):
-        # nd.array action [U,g,r]
+    def judge(self,action_sample):  # need to modify 
+        ## nd.array action [U,g,r]
         self.thickness = action_sample[1]/action_sample[2]
-        self.a = (action_sample[0]*(self.n+1)*(2*self.n+1)/self.n)**n*(action_sample[1]**(-n-1))
-        self.b_s = (action_sample[0]*(action_sample[1]-2*self.thickness)*(n+1)*(2*n+1)/n)**n * (action_sample[1]**(-2*n-1))
-        self.b_l = -(action_sample[0]*(2*self.thickness-action_sample[1])*(n+1)*(2*n+1)/n)**n * (action_sample[1]**(-2*n-1))
-        self.modified_CA = ((action_sample[0]*self.m*(action_sample[0]/action_sample[1])**(n-1))/self.surface)**(2/3)
+        self.a = (action_sample[0]*(self.n+1)*(2*self.n+1)/self.n)**self.n*(action_sample[1]**(-self.n-1))
+        self.b_s = (action_sample[0]*(action_sample[1]-2*self.thickness)*(self.n+1)*(2*self.n+1)/self.n)**self.n * (action_sample[1]**(-2*self.n-1))
+        self.b_l = -(action_sample[0]*(2*self.thickness-action_sample[1])*(self.n+1)*(2*self.n+1)/self.n)**self.n * (action_sample[1]**(-2*self.n-1))
+        self.modified_CA = ((action_sample[0]*self.m*(action_sample[0]/action_sample[1])**(self.n-1))/self.surface)**(2/3)
         self.fr = self.thickness*(action_sample[0]*self.h_w)
         
         self.p_ambient = self.density*action_sample[0]**2/2
@@ -105,12 +130,13 @@ class SlotDie(gym.Env):
             self.observation = 1  # defects free
 
         reward = self.x_f - self.judge(action)
-
+        self.total_reward += reward
+        
         self.experiments_count += 1
         done = self.experiments_count >= self.experiments_max
-        info = {}
+        info = {"rewards":reward,"done":done,"observation":self.observation,"total_rewards":self.total_reward}
 
-        return self.observation, reward, done, info
+        return self.observation, self.total_reward, done, info
 
 
 
